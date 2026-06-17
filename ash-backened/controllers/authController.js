@@ -1,13 +1,16 @@
 const bcrypt = require("bcrypt");
-const users = require("../data/users");
+const User = require("../model/User");
 const { validateLoginInput } = require("../utils/validator");
 
+// LOGIN
 const loginUser = async (req, res) => {
+  console.log("LOGIN BODY:", req.body);
+
   try {
     const { email, password } = req.body;
 
-    // Validation
     const errors = validateLoginInput(email, password);
+
     if (errors.length > 0) {
       return res.status(400).json({
         success: false,
@@ -16,8 +19,9 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Find user
-    const user = users.find((u) => u.email === email);
+    const user = await User.findOne({ email });
+
+    console.log("USER FOUND:", user);
 
     if (!user) {
       return res.status(401).json({
@@ -26,8 +30,11 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Compare password
+    console.log("DB PASSWORD:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("PASSWORD MATCH RESULT:", isMatch);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -40,12 +47,69 @@ const loginUser = async (req, res) => {
       success: true,
       message: `Login successful. Welcome ${user.email}`,
     });
+
   } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: error.message,
     });
   }
 };
 
-module.exports = { loginUser };
+// REGISTER
+const registerUser = async (req, res) => {
+  console.log("REGISTER HIT");
+  console.log("REGISTER BODY:", req.body);
+
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("HASH CREATED");
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+    });
+
+    console.log("USER CREATED:", user);
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      user,
+    });
+
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  loginUser,
+  registerUser,
+};
