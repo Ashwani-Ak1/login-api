@@ -1,7 +1,8 @@
 const bcrypt = require("bcrypt");
 const User = require("../model/User");
 const { validateLoginInput } = require("../utils/validator");
-
+console.log("USER MODEL:", User);
+console.log(require.resolve("../model/User"));
 // LOGIN
 const loginUser = async (req, res) => {
   console.log("LOGIN BODY:", req.body);
@@ -19,7 +20,9 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+   const user = await User.findOne({
+  where: { email }
+});
 
     console.log("USER FOUND:", user);
 
@@ -60,6 +63,8 @@ const loginUser = async (req, res) => {
 
 // REGISTER
 const registerUser = async (req, res) => {
+  console.log("User Model Name:", User.name);
+console.log("User Methods:", Object.keys(User));
   console.log("REGISTER HIT");
   console.log("REGISTER BODY:", req.body);
 
@@ -73,7 +78,9 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+  where: { email }
+});
 
     if (existingUser) {
       return res.status(400).json({
