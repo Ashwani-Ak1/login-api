@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
-
+import RegisterPage from "./pages/RegisterPage";
 function App() {
   return (
     <BrowserRouter>
@@ -13,13 +13,17 @@ function App() {
         
         <Route
           path="/"
-          element={<LoginPage />}
+          element={<RegisterPage  />}
         />
+          <Route path="/register" element={<RegisterPage />} />
 
+        <Route path="/login" element={<LoginPage/>} />
         <Route
           path="/dashboard"
           element={<Dashboard />}
         />
+
+        
       </Routes>
     </BrowserRouter>
   );
